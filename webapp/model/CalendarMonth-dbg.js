@@ -36,43 +36,66 @@ sap.ui.define([
 				oCalendar.prototype.onAfterRendering.apply(this);
 			}
 			var sThat = this;
-			//this.setNewTextValues(this, null);
 			var oHeader = this.getAggregation("header");
 			oHeader.attachPressNext(function(oEvent) {
 				sThat.firePressNextMonth(oEvent);
-
 			});
 			oHeader.attachPressPrevious(function(oEvent) {
 				sThat.firePressPreMonth(oEvent);
 			});
 
-			var monthId = this.getId() + "--Head-B1";
-			$('#' + monthId)[0].disabled = true;
-			$('#' + monthId)[0].setAttribute('style', 'font-weight: bold; font-size:100%;');
+			var monthBtn = sap.ui.getCore().byId(oHeader.getId() + "-B1");
+			if (monthBtn && typeof monthBtn.setEnabled === "function") {
+				monthBtn.setEnabled(false);
+				var monthDom = monthBtn.getDomRef();
+				if (monthDom) {
+					monthDom.setAttribute('style', 'font-weight: bold; font-size:100%;');
+				}
+			}
 
-			var yearId = this.getId() + "--Head-B2";
-			$('#' + yearId)[0].setAttribute('style', 'font-weight: bold; font-size:100%;');
+			var yearBtn = sap.ui.getCore().byId(oHeader.getId() + "-B2");
+			if (yearBtn && typeof yearBtn.setEnabled === "function") {
+				yearBtn.setEnabled(false);
+				var yearDom = yearBtn.getDomRef();
+				if (yearDom) {
+					yearDom.setAttribute('style', 'font-weight: bold; font-size:100%;');
+				}
+			}
 
-			var preMonthButton = this.getId() + "--Head-prev";
-			$('#' + preMonthButton)[0].setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
+			var preMonthButton = sap.ui.getCore().byId(oHeader.getId() + "-prev");
+			if (preMonthButton && typeof preMonthButton.setEnabled === "function") {
+				preMonthButton.setEnabled(false);
+				var prevDom = preMonthButton.getDomRef();
+				if (prevDom) {
+					prevDom.setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
+				}
+			}
 
-			var nextMonthButton = this.getId() + "--Head-next";
-			$('#' + nextMonthButton)[0].setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
+			var nextMonthButton = sap.ui.getCore().byId(oHeader.getId() + "-next");
+			if (nextMonthButton && typeof nextMonthButton.setEnabled === "function") {
+				nextMonthButton.setEnabled(false);
+				var nextDom = nextMonthButton.getDomRef();
+				if (nextDom) {
+					nextDom.setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
+				}
+			}
 
 			var calendarHeaderRef = sap.ui.getCore().byId(this.getId() + "--MP");
-			calendarHeaderRef.attachPageChange(function(oEvent) {
-				sThat.firePressPreMonth(oEvent);
-			});
+			if (calendarHeaderRef) {
+				calendarHeaderRef.attachPageChange(function(oEvent) {
+					sThat.firePressPreMonth(oEvent);
+				});
+			}
 
 		},
-		setNewTextValues: function(sThat, sThis, oDateArr,oDate) {
-			var firstDay ;
+		setNewTextValues: function(sThat, sThis, oDateArr, oDate) {
+			var firstDay;
 			var oCtrId = sThis.getId();
-			if(oDate){
+			if (oDate) {
 				firstDay = new Date(oDate.getFullYear(), oDate.getMonth(), 1);
 			}
-			
-			var oCurrDate = firstDay ? firstDay:sThis.getStartDate();
+
+			var oCurrDate = firstDay ? firstDay : sThis.getStartDate();
 			var oCurrYear = oCurrDate.getFullYear();
 			var currMonth = ("0" + (oCurrDate.getMonth() + 1)).slice(-2);
 			var daysInMonth = new Date(oCurrYear, currMonth, 0).getDate();
@@ -81,16 +104,18 @@ sap.ui.define([
 				var bDate = false;
 				var sDate = ("0" + (index + 1)).slice(-2);
 				var divId = oCtrId + "--Month0" + "-" + oCurrYear + currMonth + sDate;
-				$('#' + divId).children(':eq(0)').addClass('lineHeightForNum');
-				//var sCalDate = new Date(oCurrDate.getTime() + (index * 24 * 60 * 60 * 1000)); //new Date(oCurrDate);
+				var $div = $('#' + divId);
+				if ($div.length === 0) {
+					continue;
+				}
+				$div.children(':eq(0)').addClass('lineHeightForNum');
 				var day = oCurrDate.getDate() + index;
-				var sCalDate = 	new Date(oCurrDate.getFullYear(),oCurrDate.getMonth(),day);
+				var sCalDate = new Date(oCurrDate.getFullYear(), oCurrDate.getMonth(), day);
 				if (oDateArr && oDateArr.length) {
 					for (var dIndex = 0; dIndex < oDateArr.length; dIndex++) {
-						//var rDate = new Date(oDateArr[dIndex].StartDate);
 						var rDate = oDateArr[dIndex].StartDate;
-						rDate = new Date(rDate.getUTCFullYear(),rDate.getUTCMonth(),rDate.getUTCDate(),rDate.getUTCHours(),rDate.getUTCMinutes(),
-							rDate.getUTCSeconds()); 
+						rDate = new Date(rDate.getUTCFullYear(), rDate.getUTCMonth(), rDate.getUTCDate(), rDate.getUTCHours(), rDate.getUTCMinutes(),
+							rDate.getUTCSeconds());
 						if (sCalDate.getDate() === rDate.getDate()) {
 							bDate = true;
 							var revenue = sThat.formatter.formatNumericValues(oDateArr[dIndex].Revenue);
@@ -101,17 +126,16 @@ sap.ui.define([
 							var gpV = "Margin: " + oDateArr[dIndex].Margin;
 							var countV = "Count: " + count;
 							var jsText = commStartNode + revenueV + commEndNode + commStartNode + gpV + commEndNode + commStartNode + countV + commEndNode;
-							$('#' + divId).children(':eq(0)').after(jsText);
-							$('#' + divId).removeClass("disabledbutton");
-							var totalSpan = $('#' + divId).children().length;
+							$div.children(':eq(0)').after(jsText);
+							$div.removeClass("disabledbutton");
+							var totalSpan = $div.children().length;
 							if (totalSpan > 4) {
-								$('#' + divId).children(':eq(4)').remove('span');
-								$('#' + divId).children(':eq(4)').remove('span');
-								$('#' + divId).children(':eq(4)').remove('span');
+								$div.children(':eq(4)').remove('span');
+								$div.children(':eq(4)').remove('span');
+								$div.children(':eq(4)').remove('span');
 							}
 							break;
 						}
-						//break;
 					}
 				}
 				if (!bDate) {
@@ -122,13 +146,13 @@ sap.ui.define([
 					var countV1 = " -";
 					var jsText1 = commStartNode1 + revenueV1 + commEndNode1 + commStartNode1 + gpV1 + commEndNode1 + commStartNode1 + countV1 +
 						commEndNode1;
-					$('#' + divId).children(':eq(0)').after(jsText1);
-				    $('#' + divId).addClass("disabledbutton");
-					var totalSpan1 = $('#' + divId).children().length;
+					$div.children(':eq(0)').after(jsText1);
+					$div.addClass("disabledbutton");
+					var totalSpan1 = $div.children().length;
 					if (totalSpan1 > 4) {
-						$('#' + divId).children(':eq(4)').remove('span');
-								$('#' + divId).children(':eq(4)').remove('span');
-								$('#' + divId).children(':eq(4)').remove('span');
+						$div.children(':eq(4)').remove('span');
+						$div.children(':eq(4)').remove('span');
+						$div.children(':eq(4)').remove('span');
 					}
 				}
 
