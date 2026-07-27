@@ -1,0 +1,114 @@
+<mvc:View controllerName="com.csr.salesdashboardsalesdashboard.controller.SalesDashboardMonth" xmlns:l="sap.ui.layout"
+	xmlns:u="sap.ui.unified" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:c="sap.suite.ui.commons" xmlns:viz.data="sap.viz.ui5.data"
+	xmlns:viz="sap.viz.ui5.controls" xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds" class="viewPadding"
+	xmlns:cal="com.csr.salesdashboardsalesdashboard.model">
+	<App id="idFullWidthAppControl">
+	
+			<Page title="{i18n>title}" busy="{calViewMW>/busy}" busyIndicatorDelay="{calViewMW>/delay}">
+				<content>
+					<Panel class="sapUiDemoFlexBoxSizeAdjustments posOrderShipmentPanel">
+						<FlexBox alignItems="Start">
+							<items>
+								<VBox class="headerPaneltextCoor">
+									<Label text="{headerView>/totalRevenue} {headerView>/currency}" design="Bold" width="100%" class="sapUiMediumMarginBegin headerValue"
+										textAlign="Center">
+										<layoutData>
+											<FlexItemData growFactor="1"/>
+										</layoutData>
+									</Label>
+									<Label text="{i18n>revenue}" width="100%" class="sapUiMediumMarginBegin headerTitle" textAlign="Center">
+										<layoutData>
+											<FlexItemData growFactor="1"/>
+										</layoutData>
+									</Label>
+									<layoutData>
+										<FlexItemData growFactor="1"/>
+									</layoutData>
+								</VBox>
+								<VBox>
+									<Label text="{headerView>/totalMargin}" design="Bold" width="100%" class="sapUiSmallMarginEnd headerValue" textAlign="Center">
+										<layoutData>
+											<FlexItemData growFactor="1"/>
+										</layoutData>
+									</Label>
+									<Label text="{i18n>margin}" width="100%" class="sapUiSmallMarginEnd headerTitle" textAlign="Center">
+										<layoutData>
+											<FlexItemData growFactor="1"/>
+										</layoutData>
+									</Label>
+									<layoutData>
+										<FlexItemData growFactor="1"/>
+									</layoutData>
+								</VBox>
+								<VBox>
+									<Label text="{headerView>/totalCount}" design="Bold" width="100%" class="sapUiSmallMarginEnd headerValue" textAlign="Center">
+										<layoutData>
+											<FlexItemData growFactor="1"/>
+										</layoutData>
+									</Label>
+									<Label text="{i18n>count}" width="100%" class="sapUiSmallMarginEnd headerTitle" textAlign="Center">
+										<layoutData>
+											<FlexItemData growFactor="1"/>
+										</layoutData>
+									</Label>
+									<layoutData>
+										<FlexItemData growFactor="1"/>
+									</layoutData>
+								</VBox>
+							</items>
+						</FlexBox>
+					</Panel>
+					<HBox id="calendarMViewId" visible="true" width="100%" class="hboxMinWidth">
+						<cal:CalendarMonth id="calendarM" text1="Revenue" text2="GP" text3="Count" select="handleCalendarSelect" width="100%"
+							pressNextMonth="handleNextMonth" pressPreMonth="handlePreMonth" class="calBlockHeight todayDateBorder"/>
+					</HBox>
+					<HBox id="calendarWViewId" visible="false" width="100%" class="hboxMinWidth">
+						<cal:CalendarWeek id="calendarWeek" width="100%" select="handleCalendarSelect" days="7" pressNextWeek="handleNextWeek"
+							pressPreWeek="handlePreWeek" class="calBlockHeight todayDateBorder"/>
+					</HBox>
+					<Panel id="monthViewChartId" height="100%" width="100%" visible="false">
+						<content>
+							<c:ChartContainer id="systemGroupchartContainer" showFullScreen="true" showPersonalization="true" autoAdjustHeight="true" showLegend="true"
+								personalizationPress="attachPersonalizationPress" contentChange="attachContentChange" title="">
+								<c:content>
+									<c:ChartContainerContent icon="sap-icon://vertical-bar-chart" title="">
+										<c:content>
+											<!--<viz:VizFrame id="vizFrame2" height="700px" width="100%"></viz:VizFrame>-->
+											<viz:Popover id="idPopOver"></viz:Popover>
+											<viz:VizFrame id="idMonthVizFrame" uiConfig="{applicationSet:'fiori'}" height="100%" width="100%"  vizType='combination'>
+												<viz:dataset>
+													<viz.data:FlattenedDataset data="{chartModel>/}">
+														<viz.data:dimensions>
+															<viz.data:DimensionDefinition name="Date" value="{path:'chartModel>StartDate',formatter:'.formatter.displayDateForChart'}"/>
+														</viz.data:dimensions>
+														<viz.data:measures>
+															<viz.data:MeasureDefinition name="Value" value="{chartModel>Revenue}"/>
+															<viz.data:MeasureDefinition name="GP" value="{chartModel>Margin}"/>
+															
+														</viz.data:measures>
+													</viz.data:FlattenedDataset>
+												</viz:dataset>
+												<viz:feeds>
+													<viz.feeds:FeedItem uid="valueAxis" type="Measure" values="GP"/>
+													<viz.feeds:FeedItem uid="valueAxis" type="Measure" values="Value"/>
+													<viz.feeds:FeedItem id="feedCategoryAxis" uid="categoryAxis" type="Dimension" values="Date"/>
+												</viz:feeds>
+											</viz:VizFrame>
+										</c:content>
+									</c:ChartContainerContent>
+								</c:content>
+							</c:ChartContainer>
+						</content>
+					</Panel>
+				</content>
+				<footer>
+					<Toolbar>
+						<ToolbarSpacer/>
+						<Button id="csrWeekViewBtnId" text="{i18n>weekViewTitle}" press="calnedarViewHandling"/>
+						<Button id="csrChartViewBtnId" text="{i18n>chartTitle}" press="onChartPress"/>
+					</Toolbar>
+				</footer>
+			</Page>
+
+</App>	
+</mvc:View>

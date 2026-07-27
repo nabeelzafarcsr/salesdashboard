@@ -1,0 +1,124 @@
+<mvc:View controllerName="com.csr.salesdashboardsalesdashboard.controller.SalesDashboardDaily" xmlns:c="sap.suite.ui.commons" xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns:semantic="sap.m.semantic" xmlns:footerbar="sap.ushell.ui.footerbar"
+	xmlns:pl="sap.uxap" xmlns:l="sap.ui.layout" xmlns:viz="sap.viz.ui5.controls" xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds"
+	xmlns:viz.data="sap.viz.ui5.data" height="100%">
+	<semantic:DetailPage id="page" navButtonPress="handleBack" showNavButton="true"
+		title="{i18n>salesTitle} {calViewDay>/currDate}" busy="{calViewDay>/busy}" busyIndicatorDelay="{calViewDay>/delay}">
+		<semantic:content>
+			<Panel class="sapUiDemoFlexBoxSizeAdjustments posOrderShipmentPanel">
+				<FlexBox alignItems="Start">
+					<items>
+						<VBox class="headerPaneltextCoor">
+							<Label text="{calViewDay>/totalRevenue} {calViewDay>/currency}" design="Bold" width="100%" class="sapUiMediumMarginBegin headerValue"
+								textAlign="Center">
+								<layoutData>
+									<FlexItemData growFactor="1"/>
+								</layoutData>
+							</Label>
+							<Label text="{i18n>revenue}" width="100%" class="sapUiMediumMarginBegin headerTitle" textAlign="Center">
+								<layoutData>
+									<FlexItemData growFactor="1"/>
+								</layoutData>
+							</Label>
+							<layoutData>
+								<FlexItemData growFactor="1"/>
+							</layoutData>
+						</VBox>
+						<VBox>
+							<Label text="{calViewDay>/totalMargin}" design="Bold" width="100%" class="sapUiSmallMarginEnd headerValue" textAlign="Center">
+								<layoutData>
+									<FlexItemData growFactor="1"/>
+								</layoutData>
+							</Label>
+							<Label text="{i18n>margin}" width="100%" class="sapUiSmallMarginEnd headerTitle" textAlign="Center">
+								<layoutData>
+									<FlexItemData growFactor="1"/>
+								</layoutData>
+							</Label>
+							<layoutData>
+								<FlexItemData growFactor="1"/>
+							</layoutData>
+						</VBox>
+						<VBox>
+							<Label text="{calViewDay>/totalCount}" design="Bold" width="100%" class="sapUiSmallMarginEnd headerValue" textAlign="Center">
+								<layoutData>
+									<FlexItemData growFactor="1"/>
+								</layoutData>
+							</Label>
+							<Label text="{i18n>totalInvoices}" width="100%" class="sapUiSmallMarginEnd headerTitle" textAlign="Center">
+								<layoutData>
+									<FlexItemData growFactor="1"/>
+								</layoutData>
+							</Label>
+							<layoutData>
+								<FlexItemData growFactor="1"/>
+							</layoutData>
+						</VBox>
+					</items>
+				</FlexBox>
+			</Panel>
+			<Toolbar >
+				<Title text="{calViewDay>/detailLineItemsTitle}" level="H2" class="sapUiSmallMarginBegin" visible="{calViewDay>/isTableMode}"/>
+				<ToolbarSpacer/>
+				<Button id="csrTblViewId" icon="sap-icon://table-view" type="{calViewDay>/tableBtnType}" press="handleTableView"/>
+				<Button id="csrChartViewId" icon="sap-icon://bar-chart" type="{calViewDay>/chartBtnType}" press="handleChart"/>
+			</Toolbar>
+			<Table id="lineItemsList" updateFinished="onListUpdateFinished" growing="true" growingScrollToLoad="true" class="sapUiResponsiveMargin"
+				busyIndicatorDelay="{calViewDay>/delay}" items="{dummy\}" visible="{calViewDay>/isTableMode}">
+				<columns>
+					<Column demandPopin="true" minScreenWidth="Tablet" hAlign="Center"><Text text="{i18n>invoice}"/></Column>
+					<Column demandPopin="true" minScreenWidth="Tablet" hAlign="Center"><Text text="{i18n>orderTakenBy}"/></Column>
+					<Column demandPopin="true" minScreenWidth="Tablet" hAlign="Center"><Text text="{i18n>value}"/></Column>
+					<Column demandPopin="true" minScreenWidth="Tablet" hAlign="Center"><Text text="{i18n>margin}"/></Column>
+					<Column demandPopin="true" minScreenWidth="Tablet" hAlign="Center"><Text text="{i18n>customer}"/></Column>
+					<Column demandPopin="true" minScreenWidth="Tablet" hAlign="Center"><Text text="{i18n>createdAt}"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem press="onTableItemPress" vAlign="Middle">
+						<cells>
+							<Text text="{InvoiceNo}"/>
+							<Text text="{CreatedByName}"/>
+							<Text text="{parts:[{path:'Revenue'},{path:'Waerk'}], formatter:'.formatter.displayDayRevenue'}"/>
+							<Text text="{Margin}"/>
+							<Text text="{Name1}"/>
+							<Text text="{path:'Erzet',formatter:'.formatter.formatOdataTime'}"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+			<Panel id="dayViewChartId" height="100%" width="100%" visible="{calViewDay>/isChartMode}">
+				<content>
+					<c:ChartContainer id="systemGroupchartContainer" showFullScreen="false" showPersonalization="true" autoAdjustHeight="true" showLegend="true"
+						personalizationPress="attachPersonalizationPress" contentChange="attachContentChange" title="{i18n>dayChartViewTitle}">
+						<c:content>
+							<c:ChartContainerContent icon="sap-icon://vertical-bar-chart">
+								<c:content>
+									<viz:VizFrame id="idISVizFrame" height="100%" width="100%">
+										<viz:dataset>
+											<viz.data:FlattenedDataset data="{/}">
+												<viz.data:dimensions>
+													<viz.data:DimensionDefinition name="Time" value="{path:'Erzet',formatter:'.formatter.formatOdataTime'}"/>
+												</viz.data:dimensions>
+												<viz.data:measures>
+													<viz.data:MeasureDefinition name="Value(AUD)" value="{Revenue}"/>
+													<!--<viz.data:MeasureDefinition name="Cost" value="{Cost}"/>-->
+												</viz.data:measures>
+											</viz.data:FlattenedDataset>
+										</viz:dataset>
+										<viz:feeds>
+											<viz.feeds:FeedItem uid="valueAxis" type="Measure" values="Value(AUD)"/>
+											<viz.feeds:FeedItem uid="categoryAxis" type="Dimension" values="Time"/>
+										</viz:feeds>
+									</viz:VizFrame>
+								</c:content>
+							</c:ChartContainerContent>
+						</c:content>
+					</c:ChartContainer>
+				</content>
+			</Panel>
+		</semantic:content>
+		<semantic:customFooterContent>
+			<Button text="{i18n>backBtn}" type="Accept" press="handleBack"/>
+		</semantic:customFooterContent>
+	</semantic:DetailPage>
+</mvc:View>

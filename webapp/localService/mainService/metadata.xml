@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData">
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="ZPOSITIVE_REPORT_SRV" xml:lang="en" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="SalesDashBoard" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="Revenue"/>
+                </Key>
+                <Property Name="MonthDate" Type="Edm.DateTime" Precision="0" sap:label="Valid From" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Revenue" Type="Edm.String" Nullable="false" MaxLength="10" sap:label="Character Field Length = 10" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="RevenueValue" Type="Edm.Decimal" Nullable="false" Precision="16" Scale="3" sap:label="Net Value" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Margin" Type="Edm.String" Nullable="false" MaxLength="10" sap:label="Character Field Length = 10" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="MarginValue" Type="Edm.String" Nullable="false" MaxLength="6" sap:label="Margin value" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Count" Type="Edm.String" Nullable="false" MaxLength="10" sap:label="Character Field Length = 10" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="CountValue" Type="Edm.Int32" Nullable="false" sap:label="Count Value" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <EntityType Name="ReportWeekly" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="StartDate"/>
+                    <PropertyRef Name="EndDate"/>
+                </Key>
+                <Property Name="TotalRevenue" Type="Edm.Decimal" Nullable="false" Precision="16" Scale="3" sap:unit="Waerk" sap:label="Net Value" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="StartDate" Type="Edm.DateTime" Nullable="false" Precision="0" sap:label="Valid From" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="TotalMargin" Type="Edm.String" Nullable="false" MaxLength="6" sap:label="Total Margin %" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="EndDate" Type="Edm.DateTime" Nullable="false" Precision="0" sap:label="Valid To" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="TotalCount" Type="Edm.Int32" Nullable="false" sap:label="Total Count" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Revenue" Type="Edm.Decimal" Nullable="false" Precision="16" Scale="3" sap:unit="Waerk" sap:label="Net Value" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Margin" Type="Edm.String" Nullable="false" MaxLength="6" sap:label="Margin %" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Count" Type="Edm.Int32" Nullable="false" sap:label="Coutn" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Waerk" Type="Edm.String" Nullable="false" MaxLength="5" sap:label="Doc. Currency" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false" sap:semantics="currency-code"/>
+            </EntityType>
+            <EntityType Name="ReportDate" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="StartDate"/>
+                    <PropertyRef Name="InvoiceNo"/>
+                </Key>
+                <Property Name="StartDate" Type="Edm.DateTime" Nullable="false" Precision="0" sap:label="Valid From" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="TotalMarginvalue" Type="Edm.String" Nullable="false" MaxLength="6" sap:label="Total Margin %" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="InvoiceNo" Type="Edm.String" Nullable="false" MaxLength="10" sap:label="Billing Doc." sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="TotalRevenuevalue" Type="Edm.Decimal" Nullable="false" Precision="16" Scale="3" sap:unit="Waerk" sap:label="Net Value" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Ernam" Type="Edm.String" Nullable="false" MaxLength="12" sap:label="Created By" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="TotalCountvalue" Type="Edm.Int32" Nullable="false" sap:label="Total Count" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Erzet" Type="Edm.Time" Nullable="false" Precision="0" sap:label="Time" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Erdat" Type="Edm.DateTime" Precision="7" sap:label="Created On" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Kunag" Type="Edm.String" Nullable="false" MaxLength="10" sap:label="Sold-to party" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Name1" Type="Edm.String" Nullable="false" MaxLength="35" sap:label="Name 1" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Revenue" Type="Edm.Decimal" Nullable="false" Precision="16" Scale="3" sap:unit="Waerk" sap:label="Net Value" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Margin" Type="Edm.String" Nullable="false" MaxLength="6" sap:label="Margin %" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Waerk" Type="Edm.String" Nullable="false" MaxLength="5" sap:label="Doc. Currency" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false" sap:semantics="currency-code"/>
+                <Property Name="CreatedByName" Type="Edm.String" Nullable="false" MaxLength="80" sap:label="Created By Name" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <EntityContainer Name="ZPOSITIVE_REPORT_SRV_Entities" m:IsDefaultEntityContainer="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="SalesDashBoardSet" EntityType="ZPOSITIVE_REPORT_SRV.SalesDashBoard" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="ReportWeeklySet" EntityType="ZPOSITIVE_REPORT_SRV.ReportWeekly" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:searchable="true" sap:addressable="false" sap:requires-filter="true" sap:content-version="1"/>
+                <EntitySet Name="ReportDateSet" EntityType="ZPOSITIVE_REPORT_SRV.ReportDate" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:searchable="true" sap:addressable="false" sap:requires-filter="true" sap:content-version="1"/>
+            </EntityContainer>
+            <atom:link rel="self" href="https://appsapfioride.ap20.hana.ondemand.com:44303/sap/opu/odata/sap/ZPOSITIVE_REPORT_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+            <atom:link rel="latest-version" href="https://appsapfioride.ap20.hana.ondemand.com:44303/sap/opu/odata/sap/ZPOSITIVE_REPORT_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

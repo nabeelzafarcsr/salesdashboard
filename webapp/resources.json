@@ -1,0 +1,53 @@
+{
+    "resources": [
+        {
+            "name": "Component.js"
+        },
+        {
+            "name": "controller/BaseController.js"
+        },
+        {
+            "name": "controller/ErrorHandler.js"
+        },
+        {
+            "name": "controller/SalesDashboardDaily.controller.js"
+        },
+        {
+            "name": "controller/SalesDashboardMonth.controller.js"
+        },
+        {
+            "name": "css/style.css"
+        },
+        {
+            "name": "i18n/i18n.properties",
+            "raw": "i18n/i18n.properties"
+        },
+        {
+            "name": "index.html"
+        },
+        {
+            "name": "manifest.json"
+        },
+        {
+            "name": "model/CalendarMonth.js"
+        },
+        {
+            "name": "model/CalendarWeek.js"
+        },
+        {
+            "name": "model/Services.js"
+        },
+        {
+            "name": "model/formatter.js"
+        },
+        {
+            "name": "model/models.js"
+        },
+        {
+            "name": "view/SalesDashboardDaily.view.xml"
+        },
+        {
+            "name": "view/SalesDashboardMonth.view.xml"
+        }
+    ]
+}
