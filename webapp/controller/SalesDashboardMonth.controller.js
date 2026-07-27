@@ -10,6 +10,7 @@ sap.ui.define([
 	return BaseController.extend("com.csr.salesdashboardsalesdashboard.controller.SalesDashboardMonth", {
 		formatter: formatter,
 		onInit: function() {
+			console.log("[SalesDashboardMonth] onInit - v41.0.0");
 			var oHeaderModel = this._createHeaderViewModel();
 			this.setModel(oHeaderModel, "headerView");
 			var oViewModel = this._createViewModel();
@@ -81,11 +82,23 @@ sap.ui.define([
 
 		},
 		monthReportSuccess: function(data, resp, sThat, sFirstDate) {
-			sThat.oCalMonth.setNewTextValues(sThat,sThat.oCalMonth, data.results, sFirstDate);
+			try {
+				sThat.oCalMonth.setNewTextValues(sThat, sThat.oCalMonth, data.results, sFirstDate);
+			} catch (e) {
+				console.error("[SalesDashboardMonth] setNewTextValues failed:", e.message, e.stack);
+			}
 			var oModel = sThat.getView().getModel("calViewMW");
 			oModel.setProperty("/busy", false);
-			sThat.countHeaderData(data);
-			sThat.setChartSettings(sThat);
+			try {
+				sThat.countHeaderData(data);
+			} catch (e) {
+				console.error("[SalesDashboardMonth] countHeaderData failed:", e.message, e.stack);
+			}
+			try {
+				sThat.setChartSettings(sThat);
+			} catch (e) {
+				console.error("[SalesDashboardMonth] setChartSettings failed:", e.message, e.stack);
+			}
 			sThat.chartData = data.results;
 		},
 		setMonthChartData: function(data, sThat) {

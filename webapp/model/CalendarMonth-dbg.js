@@ -44,41 +44,11 @@ sap.ui.define([
 				sThat.firePressPreMonth(oEvent);
 			});
 
-			var monthBtn = sap.ui.getCore().byId(oHeader.getId() + "-B1");
-			if (monthBtn && typeof monthBtn.setEnabled === "function") {
-				monthBtn.setEnabled(false);
-				var monthDom = monthBtn.getDomRef();
-				if (monthDom) {
-					monthDom.setAttribute('style', 'font-weight: bold; font-size:100%;');
-				}
-			}
-
-			var yearBtn = sap.ui.getCore().byId(oHeader.getId() + "-B2");
-			if (yearBtn && typeof yearBtn.setEnabled === "function") {
-				yearBtn.setEnabled(false);
-				var yearDom = yearBtn.getDomRef();
-				if (yearDom) {
-					yearDom.setAttribute('style', 'font-weight: bold; font-size:100%;');
-				}
-			}
-
-			var preMonthButton = sap.ui.getCore().byId(oHeader.getId() + "-prev");
-			if (preMonthButton && typeof preMonthButton.setEnabled === "function") {
-				preMonthButton.setEnabled(false);
-				var prevDom = preMonthButton.getDomRef();
-				if (prevDom) {
-					prevDom.setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
-				}
-			}
-
-			var nextMonthButton = sap.ui.getCore().byId(oHeader.getId() + "-next");
-			if (nextMonthButton && typeof nextMonthButton.setEnabled === "function") {
-				nextMonthButton.setEnabled(false);
-				var nextDom = nextMonthButton.getDomRef();
-				if (nextDom) {
-					nextDom.setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
-				}
-			}
+			// Disable month/year buttons and style them - try multiple ID patterns for cross-version compatibility
+			this._disableHeaderButton(oHeader, ["-B1", "--B1"], 'font-weight: bold; font-size:100%;');
+			this._disableHeaderButton(oHeader, ["-B2", "--B2"], 'font-weight: bold; font-size:100%;');
+			this._disableHeaderButton(oHeader, ["-prev", "--prev"], 'font-weight: bold; font-size:1.5rem;');
+			this._disableHeaderButton(oHeader, ["-next", "--next"], 'font-weight: bold; font-size:1.5rem;');
 
 			var calendarHeaderRef = sap.ui.getCore().byId(this.getId() + "--MP");
 			if (calendarHeaderRef) {
@@ -87,27 +57,136 @@ sap.ui.define([
 				});
 			}
 
+			// If we have pending data from an OData call that arrived before rendering,
+			// apply it now that the DOM is ready.
+			if (this._pendingTextValues) {
+				var pending = this._pendingTextValues;
+				this._pendingTextValues = null;
+				this._applyTextValues(pending.sThat, pending.sThis, pending.oDateArr, pending.oDate);
+			}
 		},
+
+		_disableHeaderButton: function(oHeader, suffixes, style) {
+			var btn;
+			for (var i = 0; i < suffixes.length; i++) {
+				btn = sap.ui.getCore().byId(oHeader.getId() + suffixes[i]);
+				if (btn && typeof btn.setEnabled === "function") {
+					btn.setEnabled(false);
+					var dom = btn.getDomRef();
+					if (dom) {
+						dom.setAttribute('style', style);
+					}
+					return;
+				}
+			}
+		},
+
 		setNewTextValues: function(sThat, sThis, oDateArr, oDate) {
+			// Store the data and try to apply it.
+			// If the DOM isn't ready yet, store as pending and it will be applied in onAfterRendering.
+			this._pendingTextValues = {
+				sThat: sThat,
+				sThis: sThis,
+				oDateArr: oDateArr,
+				oDate: oDate
+			};
+
+			var self = this;
+			// Try immediately, then retry after short delays to handle async rendering
+			setTimeout(function() {
+				self._tryApplyTextValues();
+			}, 0);
+			setTimeout(function() {
+				self._tryApplyTextValues();
+			}, 200);
+			setTimeout(function() {
+				self._tryApplyTextValues();
+			}, 500);
+		},
+
+		_findDayElement: function(calDomRef, year, month, day) {
+			// Build the YYYYMMDD string for the data-sap-day attribute
+			var sDay = year + ("0" + month).slice(-2) + ("0" + day).slice(-2);
+
+			// Method 1: Use data-sap-day attribute (works across UI5 versions 1.38+)
+			var el = calDomRef.querySelector('.sapUiCalItem[data-sap-day="' + sDay + '"]');
+			if (el) {
+				return el;
+			}
+
+			// Method 2: Fallback to old ID-based lookup
+			var oCtrId = this.getId();
+			var divId = oCtrId + "--Month0-" + sDay;
+			el = document.getElementById(divId);
+			return el;
+		},
+
+		_tryApplyTextValues: function() {
+			if (!this._pendingTextValues) {
+				return; // Already applied
+			}
+			var pending = this._pendingTextValues;
+
+			// Check if the calendar DOM is ready
+			var calDomRef = pending.sThis.getDomRef();
+			if (!calDomRef) {
+				return; // DOM not ready yet, will retry
+			}
+
+			// Check if at least one day cell exists
+			var testEl = calDomRef.querySelector('.sapUiCalItem[data-sap-day]');
+			if (!testEl) {
+				// Fallback: try old ID pattern
+				var oDate = pending.oDate;
+				var firstDay;
+				if (oDate) {
+					firstDay = new Date(oDate.getFullYear(), oDate.getMonth(), 1);
+				}
+				var oCurrDate = firstDay ? firstDay : pending.sThis.getStartDate();
+				var oCurrYear = oCurrDate.getFullYear();
+				var currMonth = ("0" + (oCurrDate.getMonth() + 1)).slice(-2);
+				var testId = pending.sThis.getId() + "--Month0-" + oCurrYear + currMonth + "01";
+				testEl = document.getElementById(testId);
+				if (!testEl) {
+					return; // DOM not ready yet, will retry
+				}
+			}
+
+			this._pendingTextValues = null;
+			this._applyTextValues(pending.sThat, pending.sThis, pending.oDateArr, pending.oDate);
+		},
+
+		_applyTextValues: function(sThat, sThis, oDateArr, oDate) {
 			var firstDay;
-			var oCtrId = sThis.getId();
 			if (oDate) {
 				firstDay = new Date(oDate.getFullYear(), oDate.getMonth(), 1);
 			}
 
 			var oCurrDate = firstDay ? firstDay : sThis.getStartDate();
 			var oCurrYear = oCurrDate.getFullYear();
-			var currMonth = ("0" + (oCurrDate.getMonth() + 1)).slice(-2);
-			var daysInMonth = new Date(oCurrYear, currMonth, 0).getDate();
+			var oCurrMonth = oCurrDate.getMonth() + 1;
+			var daysInMonth = new Date(oCurrYear, oCurrMonth, 0).getDate();
 
+			var calDomRef = sThis.getDomRef();
+			console.log("[CalendarMonth] _applyTextValues: days=" + daysInMonth + ", dataRows=" + (oDateArr ? oDateArr.length : 0) + ", hasDomRef=" + !!calDomRef);
+
+			if (!calDomRef) {
+				console.log("[CalendarMonth] No DOM ref - calendar not rendered yet");
+				return;
+			}
+
+			var foundCount = 0;
+			var missedCount = 0;
 			for (var index = 0; index < daysInMonth; index++) {
 				var bDate = false;
-				var sDate = ("0" + (index + 1)).slice(-2);
-				var divId = oCtrId + "--Month0" + "-" + oCurrYear + currMonth + sDate;
-				var $div = $('#' + divId);
-				if ($div.length === 0) {
+				var dayNum = index + 1;
+				var divEl = this._findDayElement(calDomRef, oCurrYear, oCurrMonth, dayNum);
+				if (!divEl) {
+					missedCount++;
 					continue;
 				}
+				foundCount++;
+				var $div = jQuery(divEl);
 				$div.children(':eq(0)').addClass('lineHeightForNum');
 				var day = oCurrDate.getDate() + index;
 				var sCalDate = new Date(oCurrDate.getFullYear(), oCurrDate.getMonth(), day);
@@ -157,6 +236,7 @@ sap.ui.define([
 				}
 
 			}
+			console.log("[CalendarMonth] _applyTextValues done: found=" + foundCount + ", missed=" + missedCount);
 
 		}
 	});

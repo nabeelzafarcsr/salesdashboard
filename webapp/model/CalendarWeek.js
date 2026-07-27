@@ -44,62 +44,125 @@ sap.ui.define([
 				sThat.firePressPreWeek(oEvent);
 			});
 
-			var monthBtn = sap.ui.getCore().byId(oHeader.getId() + "-B1");
-			if (monthBtn && typeof monthBtn.setEnabled === "function") {
-				monthBtn.setEnabled(false);
-				var monthDom = monthBtn.getDomRef();
-				if (monthDom) {
-					monthDom.setAttribute('style', 'font-weight: bold; font-size:100%;width:30rem;');
-				}
-			}
+			// Disable header buttons - try multiple ID patterns for cross-version compatibility
+			this._disableHeaderButton(oHeader, ["-B1", "--B1"], 'font-weight: bold; font-size:100%;width:30rem;');
+			this._disableHeaderButton(oHeader, ["-B2", "--B2"], 'font-weight: bold; font-size:100%;');
+			this._disableHeaderButton(oHeader, ["-prev", "--prev"], 'font-weight: bold; font-size:1.5rem;');
+			this._disableHeaderButton(oHeader, ["-next", "--next"], 'font-weight: bold; font-size:1.5rem;');
 
-			var yearBtn = sap.ui.getCore().byId(oHeader.getId() + "-B2");
-			if (yearBtn && typeof yearBtn.setEnabled === "function") {
-				yearBtn.setEnabled(false);
-				var yearDom = yearBtn.getDomRef();
-				if (yearDom) {
-					yearDom.setAttribute('style', 'font-weight: bold; font-size:100%;');
-				}
+			// If we have pending data from an OData call that arrived before rendering,
+			// apply it now that the DOM is ready.
+			if (this._pendingTextValues) {
+				var pending = this._pendingTextValues;
+				this._pendingTextValues = null;
+				this._applyTextValues(pending.sThat, pending.sThis, pending.oDateArr);
 			}
-
-			var preMonthButton = sap.ui.getCore().byId(oHeader.getId() + "-prev");
-			if (preMonthButton && typeof preMonthButton.setEnabled === "function") {
-				preMonthButton.setEnabled(false);
-				var prevDom = preMonthButton.getDomRef();
-				if (prevDom) {
-					prevDom.setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
-				}
-			}
-
-			var nextMonthButton = sap.ui.getCore().byId(oHeader.getId() + "-next");
-			if (nextMonthButton && typeof nextMonthButton.setEnabled === "function") {
-				nextMonthButton.setEnabled(false);
-				var nextDom = nextMonthButton.getDomRef();
-				if (nextDom) {
-					nextDom.setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
-				}
-			}
-
 		},
+
+		_disableHeaderButton: function(oHeader, suffixes, style) {
+			var btn;
+			for (var i = 0; i < suffixes.length; i++) {
+				btn = sap.ui.getCore().byId(oHeader.getId() + suffixes[i]);
+				if (btn && typeof btn.setEnabled === "function") {
+					btn.setEnabled(false);
+					var dom = btn.getDomRef();
+					if (dom) {
+						dom.setAttribute('style', style);
+					}
+					return;
+				}
+			}
+		},
+
+		_findDayElement: function(calDomRef, year, month, day) {
+			// Build the YYYYMMDD string for the data-sap-day attribute
+			var sDay = year + ("0" + month).slice(-2) + ("0" + day).slice(-2);
+
+			// Method 1: Use data-sap-day attribute (works across UI5 versions 1.38+)
+			var el = calDomRef.querySelector('.sapUiCalItem[data-sap-day="' + sDay + '"]');
+			if (el) {
+				return el;
+			}
+
+			// Method 2: Fallback to old ID-based lookup
+			var oCtrId = this.getId();
+			var divId = oCtrId + "--Month0-" + sDay;
+			el = document.getElementById(divId);
+			return el;
+		},
+
 		setNewTextValues: function(sThat, sThis, oDateArr) {
-			var oCtrId = sThis.getId();
+			this._pendingTextValues = {
+				sThat: sThat,
+				sThis: sThis,
+				oDateArr: oDateArr
+			};
+
+			var self = this;
+			setTimeout(function() {
+				self._tryApplyTextValues();
+			}, 0);
+			setTimeout(function() {
+				self._tryApplyTextValues();
+			}, 200);
+			setTimeout(function() {
+				self._tryApplyTextValues();
+			}, 500);
+		},
+
+		_tryApplyTextValues: function() {
+			if (!this._pendingTextValues) {
+				return;
+			}
+			var pending = this._pendingTextValues;
+
+			// Check if the calendar DOM is ready
+			var calDomRef = pending.sThis.getDomRef();
+			if (!calDomRef) {
+				return; // DOM not ready yet, will retry
+			}
+
+			// Check if at least one day cell exists
+			var testEl = calDomRef.querySelector('.sapUiCalItem[data-sap-day]');
+			if (!testEl) {
+				// Fallback: try old ID pattern
+				var oCurrDate = pending.sThis.getStartDate();
+				var weekStart = this.getSunday(oCurrDate);
+				var oCurrYear = weekStart.getFullYear();
+				var currMonth = ("0" + (weekStart.getMonth() + 1)).slice(-2);
+				var sDate = ("0" + weekStart.getDate()).slice(-2);
+				var testId = pending.sThis.getId() + "--Month0-" + oCurrYear + currMonth + sDate;
+				testEl = document.getElementById(testId);
+				if (!testEl) {
+					return; // DOM not ready yet, will retry
+				}
+			}
+
+			this._pendingTextValues = null;
+			this._applyTextValues(pending.sThat, pending.sThis, pending.oDateArr);
+		},
+
+		_applyTextValues: function(sThat, sThis, oDateArr) {
 			var oCurrDate = sThis.getStartDate();
 			var weekStart = this.getSunday(oCurrDate);
 			this.setStartDate(weekStart);
-			var oCurrYear = oCurrDate.getFullYear();
-			var currMonth = ("0" + (oCurrDate.getMonth() + 1)).slice(-2);
+
+			var calDomRef = sThis.getDomRef();
+			if (!calDomRef) {
+				return;
+			}
+
 			for (var index = 0; index < 7; index++) {
 				var bDate = false;
 				var day = weekStart.getDate() + index;
 				var sCalDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), day);
-				currMonth = ("0" + (sCalDate.getMonth() + 1)).slice(-2);
-				oCurrYear = sCalDate.getFullYear();
-				var sDate = ("0" + sCalDate.getDate()).slice(-2);
-				var divId = oCtrId + "--Month0" + "-" + oCurrYear + currMonth + sDate;
-				var $div = $('#' + divId);
-				if ($div.length === 0) {
+				var currMonth = sCalDate.getMonth() + 1;
+				var oCurrYear = sCalDate.getFullYear();
+				var divEl = this._findDayElement(calDomRef, oCurrYear, currMonth, sCalDate.getDate());
+				if (!divEl) {
 					continue;
 				}
+				var $div = jQuery(divEl);
 				$div.children(':eq(0)').addClass('lineHeightForNum');
 				if (oDateArr && oDateArr.length) {
 					for (var dIndex = 0; dIndex < oDateArr.length; dIndex++) {
@@ -155,7 +218,15 @@ sap.ui.define([
 			if (!oHeader) {
 				return;
 			}
-			var monthBtn = sap.ui.getCore().byId(oHeader.getId() + "-B1");
+			// Try multiple ID patterns for cross-version compatibility
+			var monthBtn = null;
+			var suffixes = ["-B1", "--B1"];
+			for (var i = 0; i < suffixes.length; i++) {
+				monthBtn = sap.ui.getCore().byId(oHeader.getId() + suffixes[i]);
+				if (monthBtn) {
+					break;
+				}
+			}
 			if (!monthBtn) {
 				return;
 			}
@@ -195,7 +266,7 @@ sap.ui.define([
 			var endDate = sCalDate.getDate() + endDatepostFix + monthNames[sCalDate.getMonth()];
 
 			var displayText = startDate + " to " + endDate;
-			$(titleDom).text(displayText);
+			jQuery(titleDom).text(displayText);
 		},
 
 		getSunday: function(fromDate) {

@@ -94,8 +94,13 @@
 }
 
 .sapUiCalWeekNum {
-    top: -0.0625rem;
-    visibility: hidden;
+    display: none !important;
+}
+
+/* Also hide week number column header in newer UI5 versions */
+.sapUiCalDatesRow .sapUiCalWeekNum,
+.sapUiCal .sapUiCalWeekNum {
+    display: none !important;
 }
 
 text.v-title.viz-title-label {
@@ -104,5 +109,17 @@ text.v-title.viz-title-label {
 .sapUiCalWH, .sapUiCalItem {
     border: 0.4rem solid #ffffff !important;
     box-sizing: border-box;
-    
+}
+
+/* Ensure calendar content area uses full width when week numbers are hidden */
+.sapUiCal .sapUiCalContent {
+    padding-left: 0 !important;
+}
+.sapUiCal .sapUiCalDatesRow {
+    width: 100% !important;
+}
+
+/* Ensure the month view uses full available width */
+.calBlockHeight .sapUiCalMonthView {
+    width: 100% !important;
 }

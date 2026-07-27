@@ -3,8 +3,8 @@
 	xmlns:viz="sap.viz.ui5.controls" xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds" class="viewPadding"
 	xmlns:cal="com.csr.salesdashboardsalesdashboard.model">
 	<App id="idFullWidthAppControl">
-	
-			<Page title="{i18n>title}" busy="{calViewMW>/busy}" busyIndicatorDelay="{calViewMW>/delay}">
+		<pages>
+			<Page title="{i18n>title}" titleAlignment="Center" busy="{calViewMW>/busy}" busyIndicatorDelay="{calViewMW>/delay}">
 				<content>
 					<Panel class="sapUiDemoFlexBoxSizeAdjustments posOrderShipmentPanel">
 						<FlexBox alignItems="Start">
@@ -66,6 +66,7 @@
 						<cal:CalendarWeek id="calendarWeek" width="100%" select="handleCalendarSelect" days="7" pressNextWeek="handleNextWeek"
 							pressPreWeek="handlePreWeek" class="calBlockHeight todayDateBorder"/>
 					</HBox>
+					<viz:Popover id="idPopOver"></viz:Popover>
 					<Panel id="monthViewChartId" height="100%" width="100%" visible="false">
 						<content>
 							<c:ChartContainer id="systemGroupchartContainer" showFullScreen="true" showPersonalization="true" autoAdjustHeight="true" showLegend="true"
@@ -73,8 +74,6 @@
 								<c:content>
 									<c:ChartContainerContent icon="sap-icon://vertical-bar-chart" title="">
 										<c:content>
-											<!--<viz:VizFrame id="vizFrame2" height="700px" width="100%"></viz:VizFrame>-->
-											<viz:Popover id="idPopOver"></viz:Popover>
 											<viz:VizFrame id="idMonthVizFrame" uiConfig="{applicationSet:'fiori'}" height="100%" width="100%"  vizType='combination'>
 												<viz:dataset>
 													<viz.data:FlattenedDataset data="{chartModel>/}">
@@ -109,6 +108,6 @@
 					</Toolbar>
 				</footer>
 			</Page>
-
-</App>	
+		</pages>
+	</App>
 </mvc:View>

@@ -23,17 +23,24 @@ sap.ui.define([
 			toDate.setUTCHours(23, 59, 59, 59);
 
 			var oModel = sThat.getView().getModel();
+			console.log("[Services] getCalendarMonthReport - serviceUrl:", oModel.sServiceUrl);
+			console.log("[Services] getCalendarMonthReport - fromDate:", fromDate.toISOString(), "toDate:", toDate.toISOString());
 			var oFilters = [(new Filter("StartDate", FilterOperator.EQ, fromDate)), (new Filter("EndDate", FilterOperator.EQ, toDate))];
 			oModel.read("/ReportWeeklySet", {
 				filters: oFilters,
 				success: function(data, sResp) {
+					console.log("[Services] getCalendarMonthReport SUCCESS - results:", data.results ? data.results.length : 0);
+					if (data.results && data.results.length > 0) {
+						console.log("[Services] first result sample:", JSON.stringify(data.results[0]).substring(0, 200));
+					}
 					if (fuSuccess) {
 						oViewModel.setProperty("/busy", false);
 						fuSuccess(data, sResp, sThat,firstDay);
 					}
 				},
-				error: function(data, sResp) {
+				error: function(oError) {
 					oViewModel.setProperty("/busy", false);
+					console.error("[Services] getCalendarMonthReport OData error:", JSON.stringify(oError));
 				}
 			});
 		},
@@ -71,8 +78,9 @@ sap.ui.define([
 						fuSuccess(data, sResp, sThat, sDate);
 					}
 				},
-				error: function(data, sResp) {
+				error: function(oError) {
 					oViewModel.setProperty("/busy", false);
+					console.error("[Services] getCalendarWeekReport OData error:", JSON.stringify(oError));
 				}
 			});
 		},
