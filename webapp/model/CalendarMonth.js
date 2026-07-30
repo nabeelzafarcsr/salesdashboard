@@ -31,6 +31,29 @@ sap.ui.define([
 			sap.ui.unified.CalendarRenderer.render(oRm, oControl);
 		},
 
+		_createMonth: function(sId) {
+			// Override parent's _createMonth to set _renderMonthWeeksOnly before first render.
+			// This tells the Month control to only render weeks containing current month days
+			// (5 rows max) instead of always showing 6 rows. Matches Neo UI5 1.71 behavior.
+			var oMonth = oCalendar.prototype._createMonth.apply(this, arguments);
+			oMonth.setProperty("_renderMonthWeeksOnly", true);
+			return oMonth;
+		},
+
+		onBeforeRendering: function() {
+			if (oCalendar.prototype.onBeforeRendering) {
+				oCalendar.prototype.onBeforeRendering.apply(this);
+			}
+			// Re-apply _renderMonthWeeksOnly after parent's onBeforeRendering
+			// (parent resets it to false for single-month calendars)
+			var aMonths = this.getAggregation("month");
+			if (aMonths) {
+				for (var i = 0; i < aMonths.length; i++) {
+					aMonths[i].setProperty("_renderMonthWeeksOnly", true);
+				}
+			}
+		},
+
 		onAfterRendering: function() {
 			if (oCalendar.prototype.onAfterRendering) {
 				oCalendar.prototype.onAfterRendering.apply(this);
@@ -44,11 +67,31 @@ sap.ui.define([
 				sThat.firePressPreMonth(oEvent);
 			});
 
-			// Disable month/year buttons and style them - try multiple ID patterns for cross-version compatibility
-			this._disableHeaderButton(oHeader, ["-B1", "--B1"], 'font-weight: bold; font-size:100%;');
-			this._disableHeaderButton(oHeader, ["-B2", "--B2"], 'font-weight: bold; font-size:100%;');
-			this._disableHeaderButton(oHeader, ["-prev", "--prev"], 'font-weight: bold; font-size:1.5rem;');
-			this._disableHeaderButton(oHeader, ["-next", "--next"], 'font-weight: bold; font-size:1.5rem;');
+			// Style header buttons using the same ID pattern as Neo: this.getId() + "--Head-<suffix>"
+			// B1 = month button (disable it like Neo does), B2 = year button (style only, keep enabled)
+			var monthId = this.getId() + "--Head-B1";
+			var monthEl = document.getElementById(monthId);
+			if (monthEl) {
+				monthEl.setAttribute('style', 'font-weight: bold; font-size:100%;');
+			}
+
+			var yearId = this.getId() + "--Head-B2";
+			var yearEl = document.getElementById(yearId);
+			if (yearEl) {
+				yearEl.setAttribute('style', 'font-weight: bold; font-size:100%;');
+			}
+
+			var prevId = this.getId() + "--Head-prev";
+			var prevEl = document.getElementById(prevId);
+			if (prevEl) {
+				prevEl.setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
+			}
+
+			var nextId = this.getId() + "--Head-next";
+			var nextEl = document.getElementById(nextId);
+			if (nextEl) {
+				nextEl.setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
+			}
 
 			var calendarHeaderRef = sap.ui.getCore().byId(this.getId() + "--MP");
 			if (calendarHeaderRef) {
@@ -56,6 +99,9 @@ sap.ui.define([
 					sThat.firePressPreMonth(oEvent);
 				});
 			}
+
+			// DOM fallback: hide 6th week row if all cells are from other months
+			this._hideExtraWeekRow();
 
 			// If we have pending data from an OData call that arrived before rendering,
 			// apply it now that the DOM is ready.
@@ -66,17 +112,27 @@ sap.ui.define([
 			}
 		},
 
-		_disableHeaderButton: function(oHeader, suffixes, style) {
-			var btn;
-			for (var i = 0; i < suffixes.length; i++) {
-				btn = sap.ui.getCore().byId(oHeader.getId() + suffixes[i]);
-				if (btn && typeof btn.setEnabled === "function") {
-					btn.setEnabled(false);
-					var dom = btn.getDomRef();
-					if (dom) {
-						dom.setAttribute('style', style);
-					}
-					return;
+		_hideExtraWeekRow: function() {
+			var calDomRef = this.getDomRef();
+			if (!calDomRef) {
+				return;
+			}
+			var allCells = calDomRef.querySelectorAll('.sapUiCalItem');
+			if (allCells.length <= 35) {
+				return; // 5 rows or fewer, nothing to hide
+			}
+			// Check if the last 7 cells (6th row) are ALL from other months
+			var lastRowStart = allCells.length - 7;
+			var allOtherMonth = true;
+			for (var i = lastRowStart; i < allCells.length; i++) {
+				if (!allCells[i].classList.contains('sapUiCalItemOtherMonth')) {
+					allOtherMonth = false;
+					break;
+				}
+			}
+			if (allOtherMonth) {
+				for (var j = lastRowStart; j < allCells.length; j++) {
+					allCells[j].style.display = 'none';
 				}
 			}
 		},

@@ -14,9 +14,7 @@
     line-height: 1.0rem !important;
 }
 
-.sapUiCal:not(.sapUiCalInt)>.sapUiCalHead {
-     max-width: 70% !important;
-}
+/* Header width - removed max-width:70% which broke arrow alignment in UI5 1.150 */
 
 .todayDateBorder .sapUiCalItemNow{
 	line-height: 2.0rem !important;
@@ -122,4 +120,18 @@ text.v-title.viz-title-label {
 /* Ensure the month view uses full available width */
 .calBlockHeight .sapUiCalMonthView {
     width: 100% !important;
+}
+
+/* Reset styles for year picker and month picker overlays.
+   Without these, the day cell styling (.sapUiCalItem height:25%, border:0.4rem white, etc.)
+   bleeds into the picker items, making year/month text invisible. */
+.sapUiCalYearPicker .sapUiCalItem,
+.sapUiCalMonthPicker .sapUiCalItem {
+    height: auto !important;
+    line-height: normal !important;
+    border: none !important;
+}
+.sapUiCalYearPicker .sapUiCalItemText,
+.sapUiCalMonthPicker .sapUiCalItemText {
+    height: auto !important;
 }

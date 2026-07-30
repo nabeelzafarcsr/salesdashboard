@@ -44,11 +44,32 @@ sap.ui.define([
 				sThat.firePressPreWeek(oEvent);
 			});
 
-			// Disable header buttons - try multiple ID patterns for cross-version compatibility
-			this._disableHeaderButton(oHeader, ["-B1", "--B1"], 'font-weight: bold; font-size:100%;width:30rem;');
-			this._disableHeaderButton(oHeader, ["-B2", "--B2"], 'font-weight: bold; font-size:100%;');
-			this._disableHeaderButton(oHeader, ["-prev", "--prev"], 'font-weight: bold; font-size:1.5rem;');
-			this._disableHeaderButton(oHeader, ["-next", "--next"], 'font-weight: bold; font-size:1.5rem;');
+			// Style header buttons using the same ID pattern as Neo: this.getId() + "--Head-<suffix>"
+			// B1 = week display button (disable it like Neo does), B2 = year button (style only)
+			var monthId = this.getId() + "--Head-B1";
+			var monthEl = document.getElementById(monthId);
+			if (monthEl) {
+				monthEl.disabled = true;
+				monthEl.setAttribute('style', 'font-weight: bold; font-size:100%;width:30rem;');
+			}
+
+			var yearId = this.getId() + "--Head-B2";
+			var yearEl = document.getElementById(yearId);
+			if (yearEl) {
+				yearEl.setAttribute('style', 'font-weight: bold; font-size:100%;');
+			}
+
+			var prevId = this.getId() + "--Head-prev";
+			var prevEl = document.getElementById(prevId);
+			if (prevEl) {
+				prevEl.setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
+			}
+
+			var nextId = this.getId() + "--Head-next";
+			var nextEl = document.getElementById(nextId);
+			if (nextEl) {
+				nextEl.setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
+			}
 
 			// If we have pending data from an OData call that arrived before rendering,
 			// apply it now that the DOM is ready.
@@ -56,21 +77,6 @@ sap.ui.define([
 				var pending = this._pendingTextValues;
 				this._pendingTextValues = null;
 				this._applyTextValues(pending.sThat, pending.sThis, pending.oDateArr);
-			}
-		},
-
-		_disableHeaderButton: function(oHeader, suffixes, style) {
-			var btn;
-			for (var i = 0; i < suffixes.length; i++) {
-				btn = sap.ui.getCore().byId(oHeader.getId() + suffixes[i]);
-				if (btn && typeof btn.setEnabled === "function") {
-					btn.setEnabled(false);
-					var dom = btn.getDomRef();
-					if (dom) {
-						dom.setAttribute('style', style);
-					}
-					return;
-				}
 			}
 		},
 
@@ -214,23 +220,8 @@ sap.ui.define([
 		},
 
 		setMonthText: function(sThat, sWeekStDate) {
-			var oHeader = sThat.getAggregation("header");
-			if (!oHeader) {
-				return;
-			}
-			// Try multiple ID patterns for cross-version compatibility
-			var monthBtn = null;
-			var suffixes = ["-B1", "--B1"];
-			for (var i = 0; i < suffixes.length; i++) {
-				monthBtn = sap.ui.getCore().byId(oHeader.getId() + suffixes[i]);
-				if (monthBtn) {
-					break;
-				}
-			}
-			if (!monthBtn) {
-				return;
-			}
-			var titleDom = monthBtn.getDomRef();
+			// Use the same ID pattern as Neo: this.getId() + "--Head-B1"
+			var titleDom = document.getElementById(sThat.getId() + "--Head-B1");
 			if (!titleDom) {
 				return;
 			}
