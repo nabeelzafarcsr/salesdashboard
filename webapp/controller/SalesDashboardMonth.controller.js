@@ -10,7 +10,7 @@ sap.ui.define([
 	return BaseController.extend("com.csr.salesdashboardsalesdashboard.controller.SalesDashboardMonth", {
 		formatter: formatter,
 		onInit: function() {
-			console.log("[SalesDashboardMonth] onInit - v45.0.0");
+			console.log("[SalesDashboardMonth] onInit - v49.0.0");
 			var oHeaderModel = this._createHeaderViewModel();
 			this.setModel(oHeaderModel, "headerView");
 			var oViewModel = this._createViewModel();

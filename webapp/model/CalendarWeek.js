@@ -71,12 +71,56 @@ sap.ui.define([
 				nextEl.setAttribute('style', 'font-weight: bold; font-size:1.5rem;');
 			}
 
-			// If we have pending data from an OData call that arrived before rendering,
-			// apply it now that the DOM is ready.
+			// Hide week number column and adjust grid layout
+			this._hideWeekNumbers();
+
+			// Re-apply text values after re-render. Pending data takes priority,
+			// otherwise re-apply last successfully applied data (handles view switches
+			// where UI5 re-renders the calendar and destroys injected spans).
 			if (this._pendingTextValues) {
 				var pending = this._pendingTextValues;
 				this._pendingTextValues = null;
 				this._applyTextValues(pending.sThat, pending.sThis, pending.oDateArr);
+			} else if (this._lastAppliedData) {
+				var last = this._lastAppliedData;
+				this._applyTextValues(last.sThat, last.sThis, last.oDateArr);
+			}
+		},
+
+		_hideWeekNumbers: function() {
+			var calDomRef = this.getDomRef();
+			if (!calDomRef) {
+				return;
+			}
+
+			var weekNums = calDomRef.querySelectorAll('.sapUiCalWeekNum');
+			if (weekNums.length === 0) {
+				return;
+			}
+
+			// Find the parent container of the week number elements to check its layout
+			var parent = weekNums[0].parentElement;
+			if (parent) {
+				var parentStyle = window.getComputedStyle(parent);
+				var gridCols = parentStyle.gridTemplateColumns;
+
+				if (gridCols && gridCols !== 'none') {
+					// Parent uses CSS grid. Remove the first column (week number)
+					// and set to 7 equal columns
+					var colValues = gridCols.split(/\s+/);
+					console.log("[CalendarWeek] Grid columns before:", colValues.length, gridCols);
+					if (colValues.length >= 8) {
+						// Remove first column (week number), keep remaining 7
+						colValues.shift();
+						parent.style.gridTemplateColumns = colValues.join(' ');
+						console.log("[CalendarWeek] Grid columns after:", colValues.join(' '));
+					}
+				}
+			}
+
+			// Hide all week number elements
+			for (var i = 0; i < weekNums.length; i++) {
+				weekNums[i].style.display = 'none';
 			}
 		},
 
@@ -158,6 +202,13 @@ sap.ui.define([
 				return;
 			}
 
+			// Store for re-application after re-renders (e.g. view switches)
+			this._lastAppliedData = {
+				sThat: sThat,
+				sThis: sThis,
+				oDateArr: oDateArr
+			};
+
 			for (var index = 0; index < 7; index++) {
 				var bDate = false;
 				var day = weekStart.getDate() + index;
@@ -169,6 +220,10 @@ sap.ui.define([
 					continue;
 				}
 				var $div = jQuery(divEl);
+
+				// Clear any previously injected spans before adding new ones
+				$div.children('.calendarBlockFont').remove();
+
 				$div.children(':eq(0)').addClass('lineHeightForNum');
 				if (oDateArr && oDateArr.length) {
 					for (var dIndex = 0; dIndex < oDateArr.length; dIndex++) {
@@ -188,12 +243,6 @@ sap.ui.define([
 							var jsText = commStartNode + revenueV + commEndNode + commStartNode + gpV + commEndNode + commStartNode + countV + commEndNode;
 							$div.children(':eq(0)').after(jsText);
 							$div.removeClass("disabledbutton");
-							var totalSpan = $div.children().length;
-							if (totalSpan > 4) {
-								$div.children(':eq(4)').remove('span');
-								$div.children(':eq(4)').remove('span');
-								$div.children(':eq(4)').remove('span');
-							}
 							break;
 						}
 					}
@@ -208,12 +257,6 @@ sap.ui.define([
 						commEndNode1;
 					$div.children(':eq(0)').after(jsText1);
 					$div.addClass("disabledbutton");
-					var totalSpan1 = $div.children().length;
-					if (totalSpan1 > 4) {
-						$div.children(':eq(4)').remove('span');
-						$div.children(':eq(4)').remove('span');
-						$div.children(':eq(4)').remove('span');
-					}
 				}
 			}
 			this.setMonthText(this, weekStart);

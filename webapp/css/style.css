@@ -1,6 +1,6 @@
 /* Enter your custom styles here */
 
-.calBlockHeight .sapUiCalItem, .sapUiCalWeekNum{
+.calBlockHeight .sapUiCalItem{
 	height: 25% !important;
 	line-height: 1.0rem !important;
 }
@@ -91,15 +91,10 @@
 	font-weight: bold !important;
 }
 
-.sapUiCalWeekNum {
-    display: none !important;
-}
-
-/* Also hide week number column header in newer UI5 versions */
-.sapUiCalDatesRow .sapUiCalWeekNum,
-.sapUiCal .sapUiCalWeekNum {
-    display: none !important;
-}
+/* Week numbers are hidden via JavaScript in CalendarMonth.onAfterRendering
+   and CalendarWeek.onAfterRendering (_hideWeekNumbers method).
+   JS handles both removing the elements AND adjusting the parent grid
+   template to prevent column misalignment. */
 
 text.v-title.viz-title-label {
     visibility: hidden;
@@ -109,18 +104,6 @@ text.v-title.viz-title-label {
     box-sizing: border-box;
 }
 
-/* Ensure calendar content area uses full width when week numbers are hidden */
-.sapUiCal .sapUiCalContent {
-    padding-left: 0 !important;
-}
-.sapUiCal .sapUiCalDatesRow {
-    width: 100% !important;
-}
-
-/* Ensure the month view uses full available width */
-.calBlockHeight .sapUiCalMonthView {
-    width: 100% !important;
-}
 
 /* Reset styles for year picker and month picker overlays.
    Without these, the day cell styling (.sapUiCalItem height:25%, border:0.4rem white, etc.)
