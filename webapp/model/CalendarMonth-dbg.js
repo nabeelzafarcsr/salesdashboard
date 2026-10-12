@@ -103,6 +103,9 @@ sap.ui.define([
 			// Hide week number column and adjust grid layout
 			this._hideWeekNumbers();
 
+			// Keep injected values in place if UI5 re-renders cells on its own
+			this._watchForCellRerender();
+
 			// DOM fallback: hide 6th week row if all cells are from other months
 			this._hideExtraWeekRow();
 
@@ -117,6 +120,53 @@ sap.ui.define([
 				var last = this._lastAppliedData;
 				this._applyTextValues(last.sThat, last.sThis, last.oDateArr, last.oDate);
 			}
+		},
+
+		// UI5 1.152 can re-render the day cells on its own (e.g. right after the first load) without
+		// calling onAfterRendering on this control, which wipes the injected Revenue/Margin/Count lines.
+		// Watch the DOM and re-apply the last known values whenever cells are found without them.
+		_watchForCellRerender: function() {
+			var calDomRef = this.getDomRef();
+			if (!calDomRef || typeof MutationObserver === "undefined") {
+				return;
+			}
+			if (this._cellObserver) {
+				this._cellObserver.disconnect();
+			}
+			var self = this;
+			this._cellObserver = new MutationObserver(function() {
+				if (self._cellCheckTimer || !self._lastAppliedData) {
+					return;
+				}
+				self._cellCheckTimer = setTimeout(function() {
+					self._cellCheckTimer = null;
+					var dom = self.getDomRef();
+					if (!dom || !self._lastAppliedData) {
+						return;
+					}
+					var aCells = dom.querySelectorAll('.sapUiCalItem[data-sap-day]:not(.sapUiCalItemOtherMonth)');
+					for (var i = 0; i < aCells.length; i++) {
+						if (!aCells[i].querySelector('.calendarBlockFont')) {
+							var last = self._lastAppliedData;
+							// Only re-apply data for the month being shown; stale data from a previous month
+							// never fills these cells and would retrigger this check endlessly.
+							var oShown = self.getStartDate();
+							if (!last.oDate || !oShown || last.oDate.getFullYear() !== oShown.getFullYear() ||
+								last.oDate.getMonth() !== oShown.getMonth()) {
+								return;
+							}
+							self._applyTextValues(last.sThat, last.sThis, last.oDateArr, last.oDate);
+							// Discard the mutations caused by our own injection so they do not retrigger the check
+							self._cellObserver.takeRecords();
+							return;
+						}
+					}
+				}, 0);
+			});
+			this._cellObserver.observe(calDomRef, {
+				childList: true,
+				subtree: true
+			});
 		},
 
 		_hideWeekNumbers: function() {
@@ -291,6 +341,10 @@ sap.ui.define([
 				var divEl = this._findDayElement(calDomRef, oCurrYear, oCurrMonth, dayNum);
 				if (!divEl) {
 					missedCount++;
+					continue;
+				}
+				// Days of the previous/next month shown in the grid stay empty, like Neo
+				if (divEl.classList.contains('sapUiCalItemOtherMonth')) {
 					continue;
 				}
 				foundCount++;

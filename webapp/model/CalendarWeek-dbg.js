@@ -74,6 +74,9 @@ sap.ui.define([
 			// Hide week number column and adjust grid layout
 			this._hideWeekNumbers();
 
+			// Keep injected values in place if UI5 re-renders cells on its own
+			this._watchForCellRerender();
+
 			// Re-apply text values after re-render. Pending data takes priority,
 			// otherwise re-apply last successfully applied data (handles view switches
 			// where UI5 re-renders the calendar and destroys injected spans).
@@ -85,6 +88,51 @@ sap.ui.define([
 				var last = this._lastAppliedData;
 				this._applyTextValues(last.sThat, last.sThis, last.oDateArr);
 			}
+		},
+
+		// UI5 1.152 can re-render the day cells on its own (e.g. right after the first load) without
+		// calling onAfterRendering on this control, which wipes the injected Revenue/Margin/Count lines.
+		// Watch the DOM and re-apply the last known values whenever cells are found without them.
+		_watchForCellRerender: function() {
+			var calDomRef = this.getDomRef();
+			if (!calDomRef || typeof MutationObserver === "undefined") {
+				return;
+			}
+			if (this._cellObserver) {
+				this._cellObserver.disconnect();
+			}
+			var self = this;
+			this._cellObserver = new MutationObserver(function() {
+				if (self._cellCheckTimer || !self._lastAppliedData) {
+					return;
+				}
+				self._cellCheckTimer = setTimeout(function() {
+					self._cellCheckTimer = null;
+					var dom = self.getDomRef();
+					var last = self._lastAppliedData;
+					if (!dom || !last) {
+						return;
+					}
+					var aCells = dom.querySelectorAll('.sapUiCalItem[data-sap-day]');
+					for (var i = 0; i < aCells.length; i++) {
+						if (!aCells[i].querySelector('.calendarBlockFont')) {
+							// Only re-apply data for the week being shown, and never change the start date here
+							var oShown = self.getStartDate();
+							if (!oShown || self.getSunday(oShown).getTime() !== last.weekKey) {
+								return;
+							}
+							self._applyTextValues(last.sThat, last.sThis, last.oDateArr, true);
+							// Discard the mutations caused by our own injection so they do not retrigger the check
+							self._cellObserver.takeRecords();
+							return;
+						}
+					}
+				}, 0);
+			});
+			this._cellObserver.observe(calDomRef, {
+				childList: true,
+				subtree: true
+			});
 		},
 
 		_hideWeekNumbers: function() {
@@ -192,10 +240,12 @@ sap.ui.define([
 			this._applyTextValues(pending.sThat, pending.sThis, pending.oDateArr);
 		},
 
-		_applyTextValues: function(sThat, sThis, oDateArr) {
+		_applyTextValues: function(sThat, sThis, oDateArr, bKeepStart) {
 			var oCurrDate = sThis.getStartDate();
 			var weekStart = this.getSunday(oCurrDate);
-			this.setStartDate(weekStart);
+			if (!bKeepStart) {
+				this.setStartDate(weekStart);
+			}
 
 			var calDomRef = sThis.getDomRef();
 			if (!calDomRef) {
@@ -206,7 +256,8 @@ sap.ui.define([
 			this._lastAppliedData = {
 				sThat: sThat,
 				sThis: sThis,
-				oDateArr: oDateArr
+				oDateArr: oDateArr,
+				weekKey: weekStart.getTime()
 			};
 
 			for (var index = 0; index < 7; index++) {

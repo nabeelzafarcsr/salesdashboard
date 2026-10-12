@@ -118,3 +118,63 @@ text.v-title.viz-title-label {
 .sapUiCalMonthPicker .sapUiCalItemText {
     height: auto !important;
 }
+
+/* Hide the week-number column (and its header placeholder) so the grid is 7 columns like Neo.
+   Newer UI5 renders a .sapUiCalWH.sapUiCalDummy header cell above the week numbers. */
+.calBlockHeight .sapUiCalWeekNum,
+.calBlockHeight .sapUiCalWH.sapUiCalDummy {
+    display: none !important;
+}
+.calBlockHeight .sapUiCalItem:not(.sapUiCalWeekNum),
+.calBlockHeight .sapUiCalWH {
+    width: 14.2857% !important;
+}
+
+/* --- Match Neo look on Cloud Foundry --- */
+
+/* Neo limited the app to ~1280px, centred; the CF launchpad uses the full window. */
+.csrLimitedWidthApp {
+    max-width: 1280px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Neo left the (hidden) week-number column's space empty on the left of the grid. */
+.calBlockHeight .sapUiCalMonthView {
+    box-sizing: border-box;
+    padding-left: 13.3% !important;
+    padding-right: 2% !important;
+}
+
+/* Newer themes paint grey backgrounds on weekday headers and other-month days; Neo had none. */
+.calBlockHeight .sapUiCalWH,
+.calBlockHeight .sapUiCalItemOtherMonth,
+.calBlockHeight .sapUiCalItemOtherMonth > .sapUiCalItemText {
+    background: transparent !important;
+}
+
+/* Newer themes draw borders/background on the injected Revenue/Margin/Count lines (visible on today). */
+.calBlockHeight .calendarBlockFont {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* UI5 1.152 gives the calendar a grey background; the white cell borders then look like grey blocks
+   behind the weekday headers and other-month days. Neo (1.71) had a white calendar. */
+.hboxMinWidth,
+.calBlockHeight,
+.calBlockHeight .sapUiCalHead,
+.calBlockHeight .sapUiCalContent,
+.calBlockHeight .sapUiCalMonthView,
+.calBlockHeight .sapUiCalItems {
+    background: #ffffff !important;
+}
+
+/* Today's cell: remove theme borders/backgrounds on every inner line (number + injected lines). */
+.calBlockHeight .sapUiCalItemNow .sapUiCalItemText {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: 0 !important;
+}

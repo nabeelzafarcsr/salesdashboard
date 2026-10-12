@@ -2,7 +2,7 @@
 	xmlns:u="sap.ui.unified" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:c="sap.suite.ui.commons" xmlns:viz.data="sap.viz.ui5.data"
 	xmlns:viz="sap.viz.ui5.controls" xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds" class="viewPadding"
 	xmlns:cal="com.csr.salesdashboardsalesdashboard.model">
-	<App id="idFullWidthAppControl">
+	<App id="idFullWidthAppControl" class="csrLimitedWidthApp">
 		<pages>
 			<Page title="{i18n>title}" titleAlignment="Center" busy="{calViewMW>/busy}" busyIndicatorDelay="{calViewMW>/delay}">
 				<content>
